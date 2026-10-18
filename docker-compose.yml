@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:15-alpine
@@ -9,6 +11,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-Mohamed} -d ${POSTGRES_DB:-dsar_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4
@@ -20,11 +27,12 @@ services:
     ports:
       - "5050:80"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   backend:
     build: 
-      context: ./backend  # AJOUTE CETTE LIGNE
+      context: ./backend
     container_name: dsar_backend
     restart: always
     ports:
@@ -34,11 +42,17 @@ services:
     volumes:
       - ./backend:/app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
     build: 
-      context: ./frontend # AJOUTE CETTE LIGNE
+      context: ./frontend
     container_name: dsar_frontend
     restart: always
     ports:
@@ -48,6 +62,9 @@ services:
       - /app/node_modules
     stdin_open: true 
     tty: true
+    depends_on:
+      backend:
+        condition: service_healthy
 
 volumes:
   postgres_data:
