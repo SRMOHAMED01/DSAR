@@ -1,17 +1,15 @@
 import os
-from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List
+from datetime import datetime
+from typing import Optional, Dict, Any
 from enum import Enum
 
-from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, status
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, EmailStr, Field
-from sqlalchemy import create_engine, Column, String, DateTime, Enum as SQLEnum, JSON, Text, Boolean
+from sqlalchemy import create_engine, Column, String, DateTime, Enum as SQLEnum, JSON, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from passlib.context import CryptContext
-from jose import jwt, JWTError
 import io
 
 from dsar_engine import DSAREngine
@@ -24,8 +22,6 @@ Base = declarative_base()
 SECRET_KEY = os.getenv("SECRET_KEY", "dsar-demo-secret-key-change-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class RequestStatus(str, Enum):

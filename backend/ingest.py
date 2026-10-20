@@ -17,7 +17,7 @@ engine = create_engine(DATABASE_URL)
 def create_schemas():
     with engine.begin() as conn:
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS raw"))
-    log.info("Schema 'raw' prêt")
+    log.info("Schema 'raw' ready")
 
 
 def load_transactions():
@@ -26,9 +26,9 @@ def load_transactions():
     df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
     df["transactiondate"] = pd.to_datetime(df["transactiondate"], errors="coerce")
     df["previoustransactiondate"] = pd.to_datetime(df["previoustransactiondate"], errors="coerce")
-    df.to_sql("raw_kaggle_transactions", engine, schema="raw",
+    df.to_sql("raw_transactions", engine, schema="raw",
               if_exists="replace", index=False)
-    log.info(f"Transactions Kaggle chargées : {len(df)} lignes")
+    log.info(f"Transactions loaded: {len(df)} rows")
 
 
 def load_customers():
@@ -40,13 +40,13 @@ def load_customers():
     for col in date_cols:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors="coerce")
-    df.to_sql("raw_github_profiles", engine, schema="raw",
+    df.to_sql("raw_customers", engine, schema="raw",
               if_exists="replace", index=False)
-    log.info(f"Profils GitHub chargés : {len(df)} lignes")
+    log.info(f"Customers loaded: {len(df)} rows")
 
 
 if __name__ == "__main__":
     create_schemas()
     load_transactions()
     load_customers()
-    log.info("Ingest terminé ✅")
+    log.info("Ingest complete ✅")
